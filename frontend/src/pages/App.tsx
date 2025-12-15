@@ -17,7 +17,7 @@ export function App() {
 
     try {
       // Backend only records email, but we keep the UI like Figma (Name/Message)
-      await submitEmail(email);
+      await submitEmail(email, name, message);
       setStatus("ok");
       setName("");
       setEmail("");
@@ -52,8 +52,8 @@ export function App() {
           <div className="mt-10 max-w-3xl">
             <img src="/assets/flow.png" alt="Flow" className="h-24 md:h-28" />
             <p className="mt-6 text-lg leading-relaxed text-white/90">
-              Whether you are a brand seeking to extend into new categories, or a manufacturer looking for brands to collaborate with,
-              <span className="font-semibold text-brand-yellow"> let's chat!</span>
+              无论您是品牌方还是制造商，都很高兴与您合作，
+              <span className="font-semibold text-brand-yellow"> 请尽快联系我们!</span>
             </p>
           </div>
         </div>
@@ -62,7 +62,7 @@ export function App() {
       {/* Showcase */}
       <section className="mx-auto max-w-6xl px-6 py-14">
         <h2 className="text-2xl font-bold tracking-tight text-brand-yellow">Showcase</h2>
-        <p className="mt-2 text-white/70">示例展示区（图片来自 Figma / 文件素材）</p>
+     
 
         <div className="mt-8 space-y-6">
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
@@ -74,29 +74,29 @@ export function App() {
         </div>
       </section>
 
-      {/* Contact */}
+      {/* 联系我们*/}
       <section id="contact" className="mx-auto max-w-6xl px-6 pb-20 pt-8">
         <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-brand-yellow">Contact Us</h2>
+          <h2 className="text-4xl font-extrabold text-brand-yellow">联系我们</h2>
           <p className="mx-auto mt-4 max-w-xl text-white/80">
-            We’d love to hear from you. Leave us a message and our team will get back to you soon.
+            我们很高兴与您合作！欢迎填写下方表格与我们联系。
           </p>
         </div>
 
         <div className="mx-auto mt-10 max-w-2xl rounded-3xl bg-white p-8 text-black shadow-2xl">
           <form onSubmit={onSubmit} className="space-y-6">
             <div>
-              <label className="text-sm font-semibold">Name</label>
+              <label className="text-sm font-semibold">姓名</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                placeholder="您的名字"
                 className="mt-2 w-full rounded-xl border border-black/10 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-yellow"
               />
             </div>
 
             <div>
-              <label className="text-sm font-semibold">Email</label>
+              <label className="text-sm font-semibold">邮箱地址</label>
               <input
                 required
                 type="email"
@@ -108,17 +108,15 @@ export function App() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold">Message</label>
+              <label className="text-sm font-semibold">内容</label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Write your message here..."
+                placeholder="请在此处留言"
                 rows={5}
                 className="mt-2 w-full resize-none rounded-xl border border-black/10 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-yellow"
               />
-              <p className="mt-2 text-xs text-black/50">
-                说明：后端按你的需求目前只记录 Email；Name/Message 仅用于界面展示。
-              </p>
+             
             </div>
 
             <button
@@ -126,7 +124,7 @@ export function App() {
               disabled={status === "loading"}
               className="w-full rounded-xl bg-brand-yellow py-3 font-bold text-white shadow hover:opacity-95 disabled:opacity-60"
             >
-              {status === "loading" ? "Submitting..." : "Submit"}
+              {status === "loading" ? "提交中..." : "提交"}
             </button>
 
             {status === "ok" && (
@@ -148,7 +146,7 @@ export function App() {
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-10 md:flex-row md:items-center md:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm leading-relaxed">
-              Whether you are a brand seeking to extend into new categories, or a manufacturer looking for brands to collaborate with,{" "}
+              无论您是品牌方还是制造商，都很高兴与您合作,{" "}
               <span className="font-semibold">let&apos;s chat!</span>
             </p>
           </div>

@@ -2,16 +2,39 @@
 backend/.venv/
 backend/__pycache__/
 backend/*.db
+backend/**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Database files
+backend/*.db
+backend/*.db-journal
+backend/*.sqlite
+backend/*.sqlite3
 
 # Node
 frontend/node_modules/
 frontend/dist/
+frontend/build/
+frontend/.vite/
 
-# Env
+
+# 忽略所有 .env 文件
 .env
+.env.local
+.env.*.local
 backend/.env
 frontend/.env
+
+# 但保留示例文件
+!backend/.env.example
+!frontend/.env.example
+!frontend/.env.development
+!frontend/.env.production
 
 # OS
 .DS_Store
 Thumbs.db
+
+
