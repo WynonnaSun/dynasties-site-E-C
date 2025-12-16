@@ -140,7 +140,7 @@ export function App() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="您的名字"
-                className="mt-2 w-full rounded-xl border border-black/10 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-yellow"
+                className="mt-2 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-brand-yellow"
               />
             </div>
 
@@ -152,7 +152,7 @@ export function App() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="mt-2 w-full rounded-xl border border-black/10 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-yellow"
+                className="mt-2 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-brand-yellow"
               />
             </div>
 
@@ -163,9 +163,8 @@ export function App() {
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="请在此处留言"
                 rows={5}
-                className="mt-2 w-full resize-none rounded-xl border border-black/10 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-yellow"
+                className="mt-2 w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-brand-yellow"
               />
-             
             </div>
 
             <button
