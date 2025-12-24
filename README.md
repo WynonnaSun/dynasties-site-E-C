@@ -6,7 +6,7 @@
 
 ## 1 克隆代码
 ```bash
-git clone <your-repo-url> /var/www/dynasties-site
+git clone https://github.com/WynonnaSun/dynasties-site-E-C.git /var/www/dynasties-site
 cd /var/www/dynasties-site
 ```
 
@@ -155,7 +155,7 @@ sudo tail -f /var/log/nginx/error.log
 | 位置 | 必须修改的内容 |
 |------|----------------|
 | `backend/.env` | `CORS_ORIGINS` → 你的域名 |
-| `backend/.env` | `ADMIN_PASSWORD` → 强密码 |
+| `backend/.env` | `ADMIN_PASSWORD` → 密码 |
 | `frontend/.env` | `VITE_API_BASE` → https://api.你的域名.com |
 | `systemd service` | `WorkingDirectory` → 实际路径 |
 | `systemd service` | `ExecStart` → 实际路径 |
