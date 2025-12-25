@@ -222,7 +222,7 @@ export function ChinesePage() {
           <div className="text-sm">
             <div className="font-semibold">联系邮箱：</div>
             <div className="mt-1 text-black/80">Contact@dynastiescapital.com</div>
-            <div className="mt-2 text-xs text-black/60">© {year} Dynasties Capital (Hong Kong)</div>
+            <div className="mt-2 text-xs text-black/60">© {year} Romance of Dynasties Investment Management Limited</div>
           </div>
         </div>
       </footer>
