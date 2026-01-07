@@ -11,8 +11,21 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import String, DateTime, Integer, create_engine, select, UniqueConstraint
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+from sqlalchemy import (
+    String,
+    DateTime,
+    Integer,
+    Boolean,
+    ForeignKey,
+    create_engine,
+    select,
+    UniqueConstraint,
+    Index,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, relationship
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 load_dotenv()
 
@@ -44,6 +57,50 @@ class EmailRecord(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=True)
     message: Mapped[str] = mapped_column(String(1000), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+class ImageSection(Base):
+    __tablename__ = "image_sections"
+    __table_args__ = (
+        UniqueConstraint("key", "locale", name="uq_section_key_locale"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    key: Mapped[str] = mapped_column(String(64), nullable=False)     # e.g. "our_business"
+    locale: Mapped[str] = mapped_column(String(2), nullable=False)   # "en" / "zh"
+    is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    images: Mapped[list["ImageItem"]] = relationship(
+        back_populates="section",
+        cascade="all, delete-orphan",
+    )
+
+class ImageItem(Base):
+    __tablename__ = "image_items"
+    __table_args__ = (
+        Index("idx_image_items_section_sort", "section_id", "sort_order"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    section_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("image_sections.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    image_url: Mapped[str] = mapped_column(String(1000), nullable=False)
+    alt_text: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    link_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+
+    is_hidden: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    section: Mapped["ImageSection"] = relationship(back_populates="images")
 
 Base.metadata.create_all(engine)
 
