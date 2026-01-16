@@ -15,7 +15,7 @@ export function ScrollToSection() {
         }
       }, 100);
     } else {
-      // 如果没有hash,滚动到顶部
+    
       window.scrollTo(0, 0);
     }
   }, [location]);

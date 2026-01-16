@@ -44,17 +44,6 @@ export function ChinesePage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <div className="flex-1"></div>
           <img src="/assets/logo.png" alt="Dynasties Capital" className="h-12 md:h-14" />
-          <div className="flex flex-1 items-center justify-end gap-4">
-            {/* Language Selector */}
-            <select
-              value={language}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-              className="rounded-lg border-2 border-black bg-brand-yellow px-3 py-2 text-sm font-bold text-black hover:bg-black hover:text-brand-yellow focus:outline-none"
-            >
-              <option value="en">English</option>
-              <option value="zh">中文</option>
-            </select>
-          </div>
         </div>
       </nav>
 

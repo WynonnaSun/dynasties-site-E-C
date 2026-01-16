@@ -26,18 +26,9 @@ export function Navbar() {
           <a href="/" className="text-base font-semibold text-black hover:opacity-70">About Us</a>
           <a href="/our-value" className="text-base font-semibold text-black hover:opacity-70">Our Value</a>
           <a href="/why-exclusive-licensing" className="text-base font-semibold text-black hover:opacity-70">Why Exclusive Licensing</a>
+          <a href="/portfolio" className="text-base font-semibold text-black hover:opacity-70">Portfolio</a>
           <a href="/#contact" className="text-base font-semibold text-black hover:opacity-70">Contact Us</a>
         </div>
-
-        {/* Desktop Language Selector */}
-        <select
-          value={language}
-          onChange={(e) => handleLanguageChange(e.target.value)}
-          className="hidden md:block rounded-lg border-2 border-black bg-brand-yellow px-3 py-2 text-sm font-bold text-black hover:bg-black hover:text-brand-yellow focus:outline-none"
-        >
-          <option value="en">English</option>
-          <option value="zh">中文</option>
-        </select>
 
         {/* Mobile Hamburger Button */}
         <button
@@ -75,6 +66,15 @@ export function Navbar() {
           >
             Why Exclusive Licensing
           </a>
+
+          <a 
+            href="/portfolio" 
+            className="block text-base font-semibold text-black hover:opacity-70"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Portfolio
+          </a>
+
           <a 
             href="/#contact" 
             className="block text-base font-semibold text-black hover:opacity-70"
@@ -82,16 +82,7 @@ export function Navbar() {
           >
             Contact Us
           </a>
-          
-          {/* Mobile Language Selector */}
-          <select
-            value={language}
-            onChange={(e) => handleLanguageChange(e.target.value)}
-            className="w-full rounded-lg border-2 border-black bg-brand-yellow px-3 py-2 text-sm font-bold text-black hover:bg-black hover:text-brand-yellow focus:outline-none"
-          >
-            <option value="en">English</option>
-            <option value="zh">中文</option>
-          </select>
+
         </div>
       </div>
     </nav>

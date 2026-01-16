@@ -1,174 +1,234 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
+import { BannerSlider } from "../components/BannerSlider";
+import { ScrollCardStack } from "../components/CardStack";
+import { ProductGrid } from "../components/ProductGrid";
+import { StreamingPlatforms } from "../components/StreamingPlatforms";
 
 export function PortfolioPage() {
-  const [currentStoreIndex, setCurrentStoreIndex] = useState(0);
-  const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  const [isStoreHovered, setIsStoreHovered] = useState(false);
-  const [isProductHovered, setIsProductHovered] = useState(false);
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
-  // Store Design 图片列表
-  const storeImages = [
-    "/assets/portfolio/store1.jpg",
-    "/assets/portfolio/store2.jpg",
-    "/assets/portfolio/store3.jpg",
-    "/assets/portfolio/store4.jpg",
-    "/assets/portfolio/store5.jpg"
-  ];
+  const storeImages = ["/assets/portfolio/design1.png", "/assets/portfolio/design2.png"];
 
-  // Product Merchandising 图片列表
   const productImages = [
-    "/assets/portfolio/product1.jpg",
-    "/assets/portfolio/product2.jpg",
-    "/assets/portfolio/product3.jpg",
-    "/assets/portfolio/product4.jpg",
-    "/assets/portfolio/product5.jpg"
+    "/assets/portfolio/product1.png",
+    "/assets/portfolio/product2.png",
+    "/assets/portfolio/product3.png",
   ];
 
-  // Store Design 自动轮播
-  useEffect(() => {
-    if (!isStoreHovered) {
-      const interval = setInterval(() => {
-        setCurrentStoreIndex((prev) => (prev + 1) % storeImages.length);
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [isStoreHovered, storeImages.length]);
+  const bannerImages = [
+    "/assets/portfolio/store1.png",
+    "/assets/portfolio/store2.png",
+    "/assets/portfolio/store3.png",
+    "/assets/portfolio/store4.png",
+  ];
 
-  // Product Merchandising 自动轮播
+  const plushImages = [
+    "/assets/portfolio/Plush1.png",
+    "/assets/portfolio/Plush2.png",
+    "/assets/portfolio/Plush3.png",
+    "/assets/portfolio/Plush4.png",
+  ];
+
+  const blindBoxImages = [
+    "/assets/portfolio/blindbox1.png",
+    "/assets/portfolio/blindbox2.png",
+    "/assets/portfolio/blindbox3.png",
+    "/assets/portfolio/blindbox4.png",
+  ];
+
+  const othersImages = [
+    "/assets/portfolio/others1.png",
+    "/assets/portfolio/others2.png",
+    "/assets/portfolio/others3.png",
+    "/assets/portfolio/others4.png",
+    "/assets/portfolio/others5.png",
+    "/assets/portfolio/others6.png",
+    "/assets/portfolio/others7.png",
+    "/assets/portfolio/others8.png",
+  ];
+
+  const streamingPlatforms = [
+    "/assets/portfolio/platform1.png",
+    "/assets/portfolio/platform2.png",
+    "/assets/portfolio/platform3.png",
+    "/assets/portfolio/platform4.png",
+    "/assets/portfolio/platform5.png",
+  ];
+
   useEffect(() => {
-    if (!isProductHovered) {
-      const interval = setInterval(() => {
-        setCurrentProductIndex((prev) => (prev + 1) % productImages.length);
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [isProductHovered, productImages.length]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.getAttribute('data-section-id');
+          if (entry.isIntersecting && id) {
+            setVisibleSections((prev) => new Set(prev).add(id));
+          }
+        });
+      },
+      {
+        threshold: 0.15,
+        rootMargin: '0px 0px -80px 0px'
+      }
+    );
+
+    Object.values(sectionRefs.current).forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => {
+      Object.values(sectionRefs.current).forEach((ref) => {
+        if (ref) observer.unobserve(ref);
+      });
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Navigation Bar */}
       <Navbar />
-
-      {/* Add padding-top to account for fixed navbar */}
       <div className="pt-20">
         {/* Main Title */}
-        <section className="w-full bg-black px-6 py-16">
+        <section className="w-full bg-black px-6 pt-16 pb-6">
           <div className="mx-auto max-w-6xl">
-            <h1 className="text-4xl font-bold text-brand-yellow md:text-5xl">
+            <h1
+              ref={(el) => (sectionRefs.current['main-title'] = el)}
+              data-section-id="main-title"
+              className={`text-center text-4xl font-bold text-brand-yellow md:text-5xl transition-all duration-700 ${
+                visibleSections.has('main-title')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-20'
+              }`}
+            >
               Stores
             </h1>
           </div>
         </section>
 
-        {/* Portfolio Content - Two Carousels */}
-        <section className="w-full bg-black px-6 py-12 pb-20">
+        {/* Two Carousels */}
+        <section className="w-full bg-black px-6 py-8">
           <div className="mx-auto max-w-7xl">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              
-              {/* Left Carousel - Store Design */}
               <div
-                className="group relative overflow-hidden rounded-2xl"
-                onMouseEnter={() => setIsStoreHovered(true)}
-                onMouseLeave={() => setIsStoreHovered(false)}
+                ref={(el) => (sectionRefs.current['carousel-1'] = el)}
+                data-section-id="carousel-1"
+                className={`transition-all duration-700 ${
+                  visibleSections.has('carousel-1')
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-20'
+                }`}
               >
-                {/* Image Container */}
-                <div className="relative aspect-[16/9] w-full">
-                  {storeImages.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`Store Design ${index + 1}`}
-                      className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
-                        index === currentStoreIndex ? 'opacity-100' : 'opacity-0'
-                      }`}
-                    />
-                  ))}
-                  
-                  {/* Hover Overlay */}
-                  <div className={`absolute inset-0 bg-black/70 transition-opacity duration-300 ${
-                    isStoreHovered ? 'opacity-100' : 'opacity-0'
-                  }`}>
-                    <div className="flex h-full items-center justify-center">
-                      <h2 className="text-4xl font-bold text-brand-yellow">
-                        Store Design
-                      </h2>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Indicator Dots */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                  {storeImages.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentStoreIndex(index)}
-                      className={`h-2 w-2 rounded-full transition-all duration-300 ${
-                        index === currentStoreIndex
-                          ? 'w-8 bg-brand-yellow'
-                          : 'bg-white/50 hover:bg-white/80'
-                      }`}
-                      aria-label={`Go to slide ${index + 1}`}
-                    />
-                  ))}
-                </div>
+                <BannerSlider
+                  images={storeImages}
+                  mode="fade"
+                  fadeEffect="zoom"
+                  autoPlayInterval={3000}
+                  showArrows={false}
+                  showIndicators={true}
+                  pauseOnHover={true}
+                  aspectRatio="16/9"
+                  showTitleOnHover={true}
+                  hoverTitle="Store Design"
+                />
               </div>
 
-              {/* Right Carousel - Product Merchandising */}
               <div
-                className="group relative overflow-hidden rounded-2xl"
-                onMouseEnter={() => setIsProductHovered(true)}
-                onMouseLeave={() => setIsProductHovered(false)}
+                ref={(el) => (sectionRefs.current['carousel-2'] = el)}
+                data-section-id="carousel-2"
+                className={`transition-all duration-700 ${
+                  visibleSections.has('carousel-2')
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-20'
+                }`}
+                style={{ transitionDelay: '100ms' }}
               >
-                {/* Image Container */}
-                <div className="relative aspect-[16/9] w-full">
-                  {productImages.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`Product Merchandising ${index + 1}`}
-                      className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
-                        index === currentProductIndex ? 'opacity-100' : 'opacity-0'
-                      }`}
-                    />
-                  ))}
-                  
-                  {/* Hover Overlay */}
-                  <div className={`absolute inset-0 bg-black/70 transition-opacity duration-300 ${
-                    isProductHovered ? 'opacity-100' : 'opacity-0'
-                  }`}>
-                    <div className="flex h-full items-center justify-center">
-                      <h2 className="text-4xl font-bold text-brand-yellow">
-                        Product Merchandising
-                      </h2>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Indicator Dots */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                  {productImages.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentProductIndex(index)}
-                      className={`h-2 w-2 rounded-full transition-all duration-300 ${
-                        index === currentProductIndex
-                          ? 'w-8 bg-brand-yellow'
-                          : 'bg-white/50 hover:bg-white/80'
-                      }`}
-                      aria-label={`Go to slide ${index + 1}`}
-                    />
-                  ))}
-                </div>
+                <BannerSlider
+                  images={productImages}
+                  mode="fade"
+                  fadeEffect="zoom"
+                  autoPlayInterval={3000}
+                  showArrows={false}
+                  showIndicators={true}
+                  pauseOnHover={true}
+                  aspectRatio="16/9"
+                  showTitleOnHover={true}
+                  hoverTitle="Product Merchandising"
+                />
               </div>
-
             </div>
           </div>
         </section>
+
+        {/* Banner */}
+        <section className="w-full bg-black px-6 py-8">
+          <div className="mx-auto max-w-7xl">
+            <div
+              ref={(el) => (sectionRefs.current['banner'] = el)}
+              data-section-id="banner"
+              className={`transition-all duration-700 ${
+                visibleSections.has('banner')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-20'
+              }`}
+            >
+              <BannerSlider
+                images={bannerImages}
+                mode="slide"
+                fadeEffect="zoom"
+                autoPlayInterval={3000}
+                showArrows={true}
+                showIndicators={true}
+                pauseOnHover={true}
+                aspectRatio="21/9"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Plush Collection Section */}
+        <section className="w-full bg-black px-6 pt-16 pb-6">
+          <div className="mx-auto max-w-6xl">
+            <h2
+              ref={(el) => (sectionRefs.current['plush-title'] = el)}
+              data-section-id="plush-title"
+              className={`text-center text-4xl font-bold text-brand-yellow md:text-5xl transition-all duration-700 ${
+                visibleSections.has('plush-title')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-20'
+              }`}
+            >
+              Plush Collection
+            </h2>
+          </div>
+        </section>
+
+        {/* Plush CardStack */}
+        <section className="w-full bg-black py-4">
+          <ScrollCardStack images={plushImages} />
+        </section>
+
+        {/* Blind Box */}
+        <ProductGrid
+          title="Blind Box"
+          images={blindBoxImages}
+          backgroundColor="bg-black"
+          singleRow={true}
+        />
+
+        {/* Others */}
+        <ProductGrid
+          title="Others"
+          images={othersImages}
+          backgroundColor="bg-black"
+          singleRow={false}
+        />
+
+        {/* Content Streaming Platforms */}
+        <StreamingPlatforms images={streamingPlatforms} />
+
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
