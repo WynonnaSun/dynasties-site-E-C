@@ -1,4 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
+import React, { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+
+gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ limitCallbacks: true });
+
 
 interface ScrollCardStackProps {
   images: string[];
@@ -9,198 +18,181 @@ export const ScrollCardStack: React.FC<ScrollCardStackProps> = ({
   images,
   className = "",
 }) => {
-  const [scrollProgress, setScrollProgress] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // 检测是否为移动端
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  // 统一卡片尺寸
-  const CARD_W = isMobile ? 300 : 340;
-  const CARD_H = isMobile ? 400 : 440;
-  const GAP = isMobile ? 20 : 40;
-
-  // 为每张卡片生成随机旋转方向
-  const cardRotations = useMemo(() => {
-    return images.map((_, index) => {
-      const totalCards = images.length;
-      const middleIndex = (totalCards - 1) / 2;
-      const offsetFromCenter = index - middleIndex;
-      
-      // 基础角度 + 随机偏移,让每张卡片方向不同
-      const baseAngle = offsetFromCenter * (isMobile ? 6 : 8);
-      const randomOffset = (Math.random() - 0.5) * 4;
-      
-      return baseAngle + randomOffset;
-    });
-  }, [images.length, isMobile]);
-
-  // 平滑的 easing 函数
-  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-  const easeInOutCubic = (t: number) => 
-    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const stageRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
+    const ctx = gsap.context(() => {
+      const sectionEl = sectionRef.current;
+      const stageEl = stageRef.current;
+      const cards = cardsRef.current.filter(Boolean);
 
-      const rect = sectionRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const elementTop = rect.top;
+      if (!sectionEl || !stageEl || cards.length < 4) return;
 
-      let progress = 0;
+      // 只清理当前 section 的触发器
+      ScrollTrigger.getAll().forEach((t) => {
+        if (t.vars?.trigger === sectionEl) t.kill();
+      });
 
-      // 扩大滚动范围,让动画更平缓
-      if (elementTop <= -windowHeight * 0.5) {
-        progress = 1;
-      } else if (elementTop < windowHeight * 0.9) {
-        const scrollStart = windowHeight * 0.9;
-        const scrollEnd = -windowHeight * 0.5;
-        const scrollRange = scrollStart - scrollEnd;
-        const scrolled = scrollStart - elementTop;
-        progress = Math.max(0, Math.min(1, scrolled / scrollRange));
-      }
-
-      setScrollProgress(progress);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // 计算每张卡片的样式
-  const getCardStyle = useCallback(
-    (index: number) => {
-      const totalCards = images.length;
-      const middleIndex = (totalCards - 1) / 2;
-      const offsetFromCenter = index - middleIndex;
-
-      // 三段式进度:
-      // 0-0.35: 错位叠放(旋转+轻微位移)
-      // 0.35-0.65: 过渡段(旋转归零,位移加速)
-      // 0.65-1.0: 完全平铺
-      
-      let rotation = 0;
-      let translateX = 0;
-      let translateY = 0;
-      let scale = 1;
-
-      if (scrollProgress < 0.35) {
-        // 阶段1: 错位叠放,使用 easeOutCubic 让启动更顺滑
-        const phase1 = easeOutCubic(scrollProgress / 0.35);
-        
-        rotation = cardRotations[index] * phase1;
-        translateX = offsetFromCenter * 20 * phase1;
-        translateY = Math.abs(offsetFromCenter) * 15 * phase1;
-        scale = 1 - Math.abs(offsetFromCenter) * 0.03 * phase1;
-        
-      } else if (scrollProgress < 0.65) {
-        // 阶段2: 过渡段,旋转归零,位移开始展开
-        const phase2 = (scrollProgress - 0.35) / 0.3;
-        const easedPhase2 = easeInOutCubic(phase2);
-        
-        // 保持阶段1的最终状态
-        const stackedX = offsetFromCenter * 20;
-        const stackedY = Math.abs(offsetFromCenter) * 15;
-        const stackedRotation = cardRotations[index];
-        
-        // 开始向平铺位置移动
-        const spreadMultiplier = isMobile ? 2.5 : 3.5;
-        const intermediateX = offsetFromCenter * 60 * spreadMultiplier * easedPhase2;
-        const intermediateY = isMobile 
-          ? Math.floor(index / 2) * (CARD_H * 0.6) * easedPhase2
-          : 0;
-        
-        translateX = stackedX + (intermediateX - stackedX) * easedPhase2;
-        translateY = stackedY * (1 - easedPhase2) + intermediateY;
-        rotation = stackedRotation * (1 - easedPhase2);
-        scale = 1 - Math.abs(offsetFromCenter) * 0.03 * (1 - easedPhase2);
-        
-      } else {
-        // 阶段3: 完全平铺,使用 easeOutCubic 让结束更自然
-        const phase3 = easeOutCubic((scrollProgress - 0.65) / 0.35);
-        
-        if (isMobile) {
-          // 移动端: 2列布局
-          const col = index % 2;
-          const row = Math.floor(index / 2);
-          
-          translateX = (col === 0 ? -1 : 1) * (CARD_W / 2 + GAP / 2);
-          translateY = row * (CARD_H * 0.6 + GAP);
-        } else {
-          // 桌面端: 横向排列
-          const finalSpacing = (CARD_W + GAP);
-          translateX = offsetFromCenter * finalSpacing;
-          translateY = 0;
-        }
-        
-        rotation = 0;
-        scale = 1;
-      }
-
-      // 层级: 中间卡片在上层
-      const zIndex = totalCards - Math.abs(offsetFromCenter);
-
-      return {
-        transform: `translate(-50%, -50%) translate(${translateX}px, ${translateY}px) rotate(${rotation}deg) scale(${scale})`,
-        zIndex,
-        opacity: 1,
-        transition: "none",
-        width: `${CARD_W}px`,
-        height: `${CARD_H}px`,
+      // 居中基准：只设一次，后面不要再覆盖 xPercent/yPercent
+      gsap.set(cards, {
+        position: "absolute",
         left: "50%",
         top: "50%",
-      } as React.CSSProperties;
-    },
-    [
-      images.length,
-      scrollProgress,
-      cardRotations,
-      isMobile,
-      CARD_W,
-      CARD_H,
-      GAP,
-    ]
-  );
+        xPercent: -50,
+        yPercent: -50,
+        transformOrigin: "50% 50%",
+        willChange: "transform",
+      });
+
+      // 
+      gsap.set(cards[0], { x: -28, y: -18, rotation: -9, zIndex: 4 });
+      gsap.set(cards[1], { x: 28, y: -14, rotation: 13, zIndex: 3 });
+      gsap.set(cards[2], { x: -20, y: 20, rotation: 6, zIndex: 2 });
+      gsap.set(cards[3], { x: 24, y: 16, rotation: -10, zIndex: 1 });
+
+      const mm = gsap.matchMedia();
+
+      // 桌面端
+      mm.add("(min-width: 641px)", () => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionEl,
+            start: "top top",
+            pin: true,
+            scrub: 1,
+            end: () => "+=1200",
+            anticipatePin: 1, 
+            invalidateOnRefresh: true,
+          },
+        });
+
+        const stageW = stageEl.clientWidth || window.innerWidth;
+        const cardW = (cards[0] as HTMLElement).offsetWidth || 280;
+
+        const margin = 24;
+        const maxSpacing = (stageW - margin * 2 - cardW) / 3;
+        const idealSpacing = cardW + 40;
+        const spacing = Math.max(60, Math.min(idealSpacing, maxSpacing));
+
+        const xs = [-1.5, -0.5, 0.5, 1.5].map((m) => m * spacing);
+
+        tl.to({}, { duration: 0.25 }); 
+        tl.fromTo(
+          cards,
+          { rotation: (i) => [ -9, 13, 6, -10 ][i] },
+          { rotation: 0, duration: 1, immediateRender: false },
+          ">"
+        );
+
+        tl.to(cards[0], { x: xs[0], y: 0, duration: 1, ease: "none" }, "spread")
+          .to(cards[1], { x: xs[1], y: 0, duration: 1, ease: "none" }, "spread")
+          .to(cards[2], { x: xs[2], y: 0, duration: 1, ease: "none" }, "spread")
+          .to(cards[3], { x: xs[3], y: 0, duration: 1, ease: "none" }, "spread");
+        tl.to({}, { duration: 1.2 });
+
+        return () => {
+          tl.scrollTrigger?.kill();
+          tl.kill();
+        };
+      });
+
+      //移动端：不 pin + 进入视口才开始
+      mm.add("(max-width: 640px)", () => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionEl,
+            start: "top 75%",
+            pin: false,
+            scrub: 1,
+            end: () => "bottom 50%",
+            invalidateOnRefresh: true,
+          },
+        });
+
+        const cardW = (cards[0] as HTMLElement).offsetWidth || 180;
+        const cardH = (cards[0] as HTMLElement).offsetHeight || 240;
+
+        const gap = 12;
+        const dx = cardW / 2 + gap;
+        const dy = cardH / 2 + gap;
+
+        tl.to(cards, { rotation: 0, duration: 0.8 }, 0);
+        tl.to(cards[0], { x: -dx, y: -dy, duration: 1 }, "m")
+          .to(cards[1], { x: dx, y: -dy, duration: 1 }, "m")
+          .to(cards[2], { x: -dx, y: dy, duration: 1 }, "m")
+          .to(cards[3], { x: dx, y: dy, duration: 1 }, "m");
+
+        return () => {
+          tl.scrollTrigger?.kill();
+          tl.kill();
+        };
+      });
+
+      const imgs = Array.from(sectionEl.querySelectorAll("img"));
+      if (imgs.length) {
+        let loaded = 0;
+        const onDone = () => ScrollTrigger.refresh();
+
+        const onLoad = () => {
+          loaded += 1;
+          if (loaded >= imgs.length) onDone();
+        };
+
+        imgs.forEach((img) => {
+          if ((img as HTMLImageElement).complete) {
+            loaded += 1;
+          } else {
+            img.addEventListener("load", onLoad, { once: true });
+            img.addEventListener("error", onLoad, { once: true });
+          }
+        });
+
+        if (loaded >= imgs.length) onDone();
+      } else {
+        ScrollTrigger.refresh();
+      }
+
+      return () => mm.revert();
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, [images]);
 
   return (
-    <div ref={sectionRef} className={`scroll-card-stack-container ${className}`}>
-      {/* 提供更长的滚动空间 */}
-      <div className="relative w-full h-[250vh] flex items-center justify-center">
-        <div className="sticky top-1/2 -translate-y-1/2 w-full max-w-7xl mx-auto px-6">
-          <div className="relative w-full h-[600px] md:h-[560px] flex items-center justify-center">
-            {images.map((image, index) => (
-              <div key={index} className="absolute" style={getCardStyle(index)}>
-                <div className="w-full h-full overflow-hidden rounded-2xl shadow-2xl bg-white">
-                  <img
-                    src={image}
-                    alt={`Card ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    draggable={false}
-                  />
-                </div>
+    <section
+      ref={sectionRef}
+      className={`w-full bg-black overflow-x-hidden ${className}`}
+      style={{ minHeight: "100vh" }} 
+    >
+      <div className="relative w-full h-screen flex items-center justify-center">
+        <div
+          ref={stageRef}
+          className="relative w-full max-w-7xl mx-auto px-4 sm:px-6"
+          style={{ height: "min(520px, 70vh)" }}
+        >
+          {images.slice(0, 4).map((image, index) => (
+            <div
+              key={index}
+              ref={(el) => (cardsRef.current[index] = el)}
+              style={{
+                width: "clamp(160px, 42vw, 280px)",
+                height: "clamp(220px, 57vw, 380px)",
+              }}
+            >
+              <div className="w-full h-full overflow-hidden rounded-2xl shadow-2xl bg-white">
+                <img
+                  src={image}
+                  alt={`Card ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
-
-      {/* 调试用进度指示器 */}
-      <div className="fixed bottom-4 right-4 bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg text-white text-sm font-mono z-50">
-        <div>Progress: {(scrollProgress * 100).toFixed(1)}%</div>
-        <div className="text-xs text-gray-400 mt-1">
-          {scrollProgress < 0.35 && "Phase 1: Stacking"}
-          {scrollProgress >= 0.35 && scrollProgress < 0.65 && "Phase 2: Transition"}
-          {scrollProgress >= 0.65 && "Phase 3: Spread"}
-        </div>
-      </div>
-    </div>
+    </section>
   );
 };

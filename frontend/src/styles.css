@@ -10,19 +10,22 @@
   font-family: "Poppins", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
-@keyframes scroll {
+/* PartnersMarquee */
+
+@keyframes marquee-scroll {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(calc(-1 * var(--marquee-distance)));
   }
 }
 
-.animate-scroll {
-  animation: scroll 10s linear infinite;
+.marquee-track {
+  animation: marquee-scroll var(--marquee-duration) linear infinite;
 }
 
-.animate-scroll:hover {
+/* 鼠标悬停时暂停滚动 */
+.marquee-track:hover {
   animation-play-state: paused;
 }

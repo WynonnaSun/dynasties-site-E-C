@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { submitEmail } from "../lib/api";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
+import PartnersMarquee from '../components/PartnersMarquee';
 
 export function HomePage() {
   const [name, setName] = useState("");
@@ -11,6 +12,7 @@ export function HomePage() {
   const [error, setError] = useState<string>("");
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const stats = [
     {
@@ -72,6 +74,39 @@ export function HomePage() {
       Object.values(sectionRefs.current).forEach((ref) => {
         if (ref) observer.unobserve(ref);
       });
+    };
+  }, []);
+
+  // 无缝滚动逻辑
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let animationFrameId: number;
+    let scrollPosition = 0;
+
+    const scroll = () => {
+      const firstSet = container.querySelector('.partner-set');
+      if (!firstSet) return;
+
+      const scrollWidth = firstSet.scrollWidth;
+      
+      // 每帧移动的像素（调整这个值可以改变速度）
+      scrollPosition += 0.5;
+
+      // 当滚动到第一组图片宽度时，重置到0
+      if (scrollPosition >= scrollWidth) {
+        scrollPosition = 0;
+      }
+
+      container.style.transform = `translateX(-${scrollPosition}px)`;
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    animationFrameId = requestAnimationFrame(scroll);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
@@ -308,23 +343,23 @@ export function HomePage() {
         <section
           ref={(el) => (sectionRefs.current['ip-section'] = el)}
           data-section-id="ip-section"
-          className={`w-full bg-black px-6 py-20 text-center transition-all duration-700 ${
+          className={`w-full bg-black px-4 sm:px-6 py-12 sm:py-20 text-center transition-all duration-700 ${
             visibleSections.has('ip-section')
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-20'
           }`}
         >
-          <h2 className="mb-12 text-4xl font-bold text-brand-yellow">
+          <h2 className="mb-8 sm:mb-12 text-2xl sm:text-3xl md:text-4xl font-bold text-brand-yellow px-4">
             Global IP Partnerships
           </h2>
-
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-x-6 gap-y-14 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          
+          <div className="mx-auto grid max-w-7xl grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
             {ipData.map((ip, index) => (
               <div
                 key={index}
                 ref={(el) => (sectionRefs.current[`ip-${index}`] = el)}
                 data-section-id={`ip-${index}`}
-                className={`w-full max-w-[220px] mx-auto rounded-2xl border border-[rgba(247,207,70,0.2)] bg-white px-5 py-7 shadow-lg transition-all duration-700 hover:-translate-y-2 hover:border-[rgba(247,207,70,0.5)] hover:shadow-2xl ${
+                className={`w-full rounded-xl sm:rounded-2xl border border-[rgba(247,207,70,0.2)] bg-white px-3 py-4 sm:px-5 sm:py-7 shadow-lg transition-all duration-700 hover:-translate-y-2 hover:border-[rgba(247,207,70,0.5)] hover:shadow-2xl ${
                   visibleSections.has(`ip-${index}`)
                     ? 'opacity-100 translate-y-0'
                     : 'opacity-0 translate-y-20'
@@ -334,16 +369,24 @@ export function HomePage() {
                 <img 
                   src={`/assets/ip/ip-${ip.img}.png`}
                   alt={ip.name}
-                  className="mx-auto mb-4 h-36 w-36 rounded-full border-[3px] border-[rgba(247,207,70,0.3)] object-cover transition-all duration-300 hover:border-[#F7CF46]"
+                  className="mx-auto mb-3 sm:mb-4 h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 rounded-full border-[3px] border-[rgba(247,207,70,0.3)] object-cover transition-all duration-300 hover:border-[#F7CF46]"
                 />
-                <h3 className="mb-1.5 text-lg font-bold text-[#F7CF46]">{ip.name}</h3>
-                <p className="mb-1 text-sm font-semibold text-[#1A1A1A]">{ip.country}</p>
-                <p className="text-sm text-gray-600">{ip.desc}</p>
+                <h3 className="mb-1 sm:mb-1.5 text-sm sm:text-base md:text-lg font-bold text-[#F7CF46] line-clamp-1">
+                  {ip.name}
+                </h3>
+                <p className="mb-0.5 sm:mb-1 text-xs sm:text-sm font-semibold text-[#1A1A1A]">
+                  {ip.country}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
+                  {ip.desc}
+                </p>
               </div>
             ))}
           </div>
-
-          <p className="mt-10 text-sm italic text-white/70">* Above are some of the partnered IPs.</p>
+          
+          <p className="mt-6 sm:mt-10 text-xs sm:text-sm italic text-white/70 px-4">
+            * Above are some of the partnered IPs.
+          </p>
         </section>
 
         {/* Our Team */}
@@ -476,33 +519,7 @@ export function HomePage() {
         </section>
 
         {/* Business Partners */}
-        <section className="w-full overflow-hidden bg-black px-6 py-20 text-center">
-          <h2 className="mb-12 text-4xl font-bold text-brand-yellow">
-            Business Partners
-          </h2>
-          
-          <div className="relative overflow-hidden">
-            <div className="flex animate-scroll whitespace-nowrap">
-              {[...Array(31)].map((_, i) => (
-                <img 
-                  key={`first-${i}`}
-                  src={`/assets/partners/${String(i + 1).padStart(2, '0')}.png`} 
-                  alt={`Partner ${i + 1}`} 
-                  className="mx-0.5 inline-block h-20 object-contain"
-                />
-              ))}
-              
-              {[...Array(31)].map((_, i) => (
-                <img 
-                  key={`second-${i}`}
-                  src={`/assets/partners/${String(i + 1).padStart(2, '0')}.png`} 
-                  alt={`Partner ${i + 1}`} 
-                  className="mx-0.5 inline-block h-20 object-contain"
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+        <PartnersMarquee />
 
         {/* Contact Us */}
         <section id="contact" className="mx-auto max-w-7xl px-6 pb-20 pt-8">
