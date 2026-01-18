@@ -116,6 +116,18 @@ class EmailOut(BaseModel):
     message: str
     created_at: datetime
 
+class ImageItemOut(BaseModel):
+    id: int
+    image_url: str
+    alt_text: str | None = None
+    link_url: str | None = None
+    sort_order: int
+
+class ImageSectionOut(BaseModel):
+    locale: str
+    section_key: str
+    images: List[ImageItemOut]
+
 app = FastAPI(title="Email Collector API", version="1.0.0")
 
 def admin_auth(credentials: HTTPBasicCredentials = Depends(security)):
@@ -204,3 +216,49 @@ def list_emails(
                 created_at=r.created_at
             ) for r in rows
         ]
+    
+@app.get("/api/content/{locale}/{section_key}", response_model=ImageSectionOut)
+def get_image_section_content(
+    locale: str,
+    section_key: str,
+    include_hidden: bool = False,  # 默认不返回隐藏图片；需要时可 ?include_hidden=true
+):
+    locale = locale.strip().lower()
+    section_key = section_key.strip()
+
+    with Session(engine) as session:
+        # 1) 找 section（key + locale 唯一）
+        section = session.scalar(
+            select(ImageSection).where(
+                ImageSection.locale == locale,
+                ImageSection.key == section_key,
+            )
+        )
+
+        # 不存在或被禁用都视为不可用
+        if not section or not section.is_enabled:
+            raise HTTPException(status_code=404, detail="Section not found")
+
+        # 2) 查该 section 下的图片，默认过滤隐藏，按 sort_order 排序
+        stmt = select(ImageItem).where(ImageItem.section_id == section.id)
+        if not include_hidden:
+            stmt = stmt.where(ImageItem.is_hidden == False)  # noqa: E712
+
+        stmt = stmt.order_by(ImageItem.sort_order.asc(), ImageItem.id.asc())
+
+        items = session.scalars(stmt).all()
+
+        return ImageSectionOut(
+            locale=section.locale,
+            section_key=section.key,
+            images=[
+                ImageItemOut(
+                    id=i.id,
+                    image_url=i.image_url,
+                    alt_text=i.alt_text,
+                    link_url=i.link_url,
+                    sort_order=i.sort_order,
+                )
+                for i in items
+            ],
+        )
