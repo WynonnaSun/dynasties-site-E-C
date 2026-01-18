@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
+import ImageSection from "../components/ImageSection";
+
 
 export function OurValuePage() {
   const [visibleSections, setVisibleSections] = useState<Set<number>>(new Set());
@@ -58,6 +60,13 @@ export function OurValuePage() {
           </div>
         </section>
 
+        {/* Our Business Image Section */}
+        <section className="w-full bg-black px-6 py-12">
+          <div className="mx-auto max-w-6xl">
+            <ImageSection locale="en" sectionKey="our_business" />
+          </div>
+        </section>
+        
         {/* Content Section */}
         <section className="w-full bg-black px-6 py-12 pb-20">
           <div className="mx-auto max-w-6xl space-y-8">
