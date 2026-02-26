@@ -32,3 +32,44 @@ export async function fetchAdminEmails(username: string, password: string) {
   console.log("api.ts data:", data);
   return data;
 }
+
+export type ImageItem = {
+  id: number;
+  image_url: string;
+  alt_text?: string | null;
+  link_url?: string | null;
+  is_hidden?: boolean;
+  sort_order?: number;
+};
+
+export type ImageSectionResponse = {
+  section?: {
+    id?: number;
+    key?: string;
+    locale?: string;
+    is_enabled?: boolean;
+  };
+  images: ImageItem[];
+};
+
+export async function fetchImageSection(
+  locale: string,
+  sectionKey: string,
+  includeHidden = false
+): Promise<ImageSectionResponse> {
+  const params = new URLSearchParams();
+  if (includeHidden) params.set("include_hidden", "true");
+
+  const url =
+    `${API_BASE}/api/content/${encodeURIComponent(locale)}/${encodeURIComponent(sectionKey)}` +
+    (params.toString() ? `?${params.toString()}` : "");
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to fetch image section");
+  }
+
+  return res.json();
+}
